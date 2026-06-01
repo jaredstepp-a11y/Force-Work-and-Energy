@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Science 10 — Energy Conservation Lab</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #185FA5; --blue-light: #E6F1FB; --blue-dark: #0C447C;
+    --green: #0F6E56; --green-light: #EAF3DE; --green-dark: #085041;
+    --amber: #854F0B; --amber-light: #FAEEDA;
+    --coral: #993C1D; --coral-light: #FAECE7;
+    --gray-50: #F1EFE8; --gray-100: #D3D1C7; --gray-400: #888780; --gray-700: #444441;
+    --purple-light: #EEEDFE; --purple: #534AB7; --purple-dark: #3C3489;
+    --text: #1a1a18; --text-secondary: #5F5E5A; --text-muted: #888780;
+    --border: #D3D1C7; --surface: #F8F7F3; --white: #ffffff;
+    --radius: 10px; --radius-sm: 6px;
+    --font: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Courier New', monospace;
+  }
+  body { font-family: var(--font); background: var(--gray-50); color: var(--text); min-height: 100vh; }
+
+  .page-header {
+    background: linear-gradient(135deg, #0C447C 0%, #185FA5 60%, #1D9E75 100%);
+    color: white; padding: 2rem 2rem 1.5rem; position: relative; overflow: hidden;
+  }
+  .page-header::before {
+    content: ''; position: absolute; top: -40px; right: -40px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .header-badge {
+    display: inline-block; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 99px; font-size: 12px; padding: 3px 12px; margin-bottom: 10px; letter-spacing: 0.05em;
+  }
+  .header-title { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .header-sub { font-size: 14px; opacity: 0.85; }
+  .student-form-bar {
+    background: white; border-bottom: 1px solid var(--border);
+    padding: 12px 2rem; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  }
+  .student-form-bar label { font-size: 13px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+  .student-form-bar input {
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 7px 12px; font-size: 13px; font-family: var(--font);
+    flex: 1; min-width: 140px; max-width: 260px; background: var(--surface);
+  }
+  .student-form-bar input:focus { outline: 2px solid var(--blue); border-color: var(--blue); }
+
+  .main { max-width: 900px; margin: 0 auto; padding: 1.5rem; }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .tab {
+    padding: 8px 18px; font-size: 13px; font-weight: 600;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: white; color: var(--text-secondary); cursor: pointer;
+    transition: all 0.15s; font-family: var(--font);
+  }
+  .tab.active { background: var(--blue); color: white; border-color: var(--blue); }
+  .tab:hover:not(.active) { background: var(--gray-50); color: var(--text); }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .card {
+    background: white; border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem;
+  }
+  .card-title {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 1rem;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem; }
+  @media (max-width: 600px) { .grid2 { grid-template-columns: 1fr; } .grid3 { grid-template-columns: 1fr; } }
+
+  .metric-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 1rem; text-align: center;
+  }
+  .metric-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .metric-value { font-size: 24px; font-weight: 700; color: var(--text); }
+  .metric-unit { font-size: 12px; color: var(--text-muted); }
+  .metric-card.blue .metric-value { color: var(--blue); }
+  .metric-card.green .metric-value { color: var(--green); }
+  .metric-card.amber .metric-value { color: var(--amber); }
+
+  .slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 0.85rem; }
+  .slider-label { font-size: 13px; color: var(--text-secondary); min-width: 90px; font-weight: 600; }
+  .slider-row input[type=range] {
+    flex: 1; -webkit-appearance: none; height: 4px;
+    background: var(--border); border-radius: 2px; outline: none;
+  }
+  .slider-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--blue); cursor: pointer; border: 2px solid white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .slider-val { font-size: 13px; font-weight: 700; min-width: 56px; text-align: right; color: var(--text); }
+
+  .formula-box {
+    background: var(--blue-light); border-left: 3px solid var(--blue);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 8px 12px; font-size: 14px; font-family: var(--font-mono);
+    font-weight: 700; color: var(--blue-dark); margin-bottom: 8px;
+  }
+
+  .bar-wrap { margin-bottom: 10px; }
+  .bar-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: flex; justify-content: space-between; font-weight: 600; }
+  .bar-track { height: 20px; background: var(--gray-50); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.25s ease; }
+  .bar-gpe { background: var(--blue); }
+  .bar-ke { background: var(--green); }
+  .bar-friction { background: var(--coral); }
+
+  canvas.sim-canvas {
+    width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    display: block; background: var(--surface); cursor: default;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 18px; font-size: 13px; font-weight: 700;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: white; color: var(--text); cursor: pointer;
+    transition: all 0.15s; font-family: var(--font);
+  }
+  .btn:hover { background: var(--gray-50); }
+  .btn:active { transform: scale(0.97); }
+  .btn-blue { background: var(--blue); color: white; border-color: var(--blue); }
+  .btn-blue:hover { background: var(--blue-dark); }
+  .btn-green { background: var(--green); color: white; border-color: var(--green); }
+  .btn-green:hover { background: var(--green-dark); }
+  .btn-amber { background: var(--amber); color: white; border-color: var(--amber); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+
+  table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.data-table th {
+    font-weight: 700; color: var(--text-secondary); font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 8px 10px; border-bottom: 2px solid var(--border); text-align: left;
+  }
+  table.data-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  table.data-table tr:last-child td { border-bottom: none; }
+  table.data-table tr:nth-child(even) td { background: var(--surface); }
+  table.data-table .me-col { font-weight: 700; color: var(--blue); }
+
+  .quiz-q { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 12px; line-height: 1.5; }
+  .quiz-option {
+    padding: 10px 16px; font-size: 13px; font-weight: 500;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: white; color: var(--text); cursor: pointer;
+    margin-bottom: 8px; transition: all 0.15s; text-align: left;
+    width: 100%; font-family: var(--font); display: block;
+  }
+  .quiz-option:hover:not(:disabled) { background: var(--blue-light); border-color: var(--blue); }
+  .quiz-option.correct { background: var(--green-light); border-color: var(--green); color: #085041; font-weight: 700; }
+  .quiz-option.wrong { background: var(--coral-light); border-color: var(--coral); color: #4A1B0C; font-weight: 700; }
+  .quiz-option:disabled { cursor: default; }
+
+  .feedback-box { padding: 12px 16px; border-radius: var(--radius-sm); font-size: 13px; margin-top: 10px; line-height: 1.5; }
+  .feedback-correct { background: var(--green-light); color: #085041; border: 1px solid var(--green); }
+  .feedback-wrong { background: var(--coral-light); color: #4A1B0C; border: 1px solid var(--coral); }
+
+  .step-dots { display: flex; gap: 6px; margin-bottom: 1rem; align-items: center; }
+  .step-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); transition: all 0.2s; }
+  .step-dot.done { background: var(--blue); }
+  .step-dot.active { background: var(--green); width: 12px; height: 12px; }
+  .score-badge { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-left: auto; }
+
+  /* COMPLETION SECTION */
+  .completion-card {
+    background: linear-gradient(135deg, var(--blue-light), var(--green-light));
+    border: 2px solid var(--blue); border-radius: var(--radius);
+    padding: 1.5rem; margin-top: 1.5rem;
+  }
+  .completion-title { font-size: 18px; font-weight: 700; color: var(--blue-dark); margin-bottom: 6px; }
+  .completion-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 1rem; }
+  .summary-box {
+    background: white; border: 1px solid var(--blue); border-radius: var(--radius-sm);
+    padding: 1rem; font-family: var(--font-mono); font-size: 12px;
+    color: var(--text); white-space: pre-wrap; word-break: break-word;
+    margin-bottom: 1rem; min-height: 80px;
+  }
+  .copy-btn {
+    background: var(--blue); color: white; border: none;
+    border-radius: var(--radius-sm); padding: 10px 20px;
+    font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font);
+    transition: background 0.15s;
+  }
+  .copy-btn:hover { background: var(--blue-dark); }
+  .copy-feedback { font-size: 12px; color: var(--green); font-weight: 700; margin-left: 10px; display: none; }
+
+  .info-note {
+    background: var(--amber-light); border-left: 3px solid var(--amber);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 10px 14px; font-size: 13px; color: var(--amber); margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  .progress-bar-wrap { margin-bottom: 1rem; }
+  .progress-track { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--blue); border-radius: 4px; transition: width 0.3s ease; }
+  .progress-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="header-badge">Alberta Curriculum · Science 10 · Unit C</div>
+  <div class="header-title">⚡ Energy Conservation Lab</div>
+  <div class="header-sub">Kinetic Energy · Gravitational Potential Energy · Law of Conservation of Mechanical Energy</div>
+</div>
+
+<div class="student-form-bar">
+  <label for="studentName">Student name:</label>
+  <input type="text" id="studentName" placeholder="First Last" oninput="updateCompletion()">
+  <label for="studentBlock">Block:</label>
+  <input type="text" id="studentBlock" placeholder="e.g. 3B" style="max-width:90px;" oninput="updateCompletion()">
+  <label for="studentDate">Date:</label>
+  <input type="date" id="studentDate" oninput="updateCompletion()">
+</div>
+
+<div class="main">
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('explore')">🔬 Part 1 — Explore</button>
+    <button class="tab" onclick="switchTab('ramp')">📐 Part 2 — Ramp Lab</button>
+    <button class="tab" onclick="switchTab('data')">📊 Part 3 — Data Table</button>
+    <button class="tab" onclick="switchTab('quiz')">✏️ Part 4 — Quiz</button>
+  </div>
+
+  <!-- PART 1 -->
+  <div id="panel-explore" class="panel active">
+    <div class="info-note">
+      📋 Part 1 of 4 — Use the sliders to change the mass and drop height, then click Drop to observe how energy transforms.
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Simulation — free fall</div>
+        <canvas id="simCanvas" class="sim-canvas" height="240"></canvas>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+          <button class="btn btn-blue" onclick="startSim()">▶ Drop</button>
+          <button class="btn" onclick="resetSim()">↺ Reset</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Adjust parameters</div>
+        <div class="slider-row">
+          <span class="slider-label">Mass (kg)</span>
+          <input type="range" id="massSlider" min="1" max="20" step="1" value="5" oninput="updateExploreSim()">
+          <span class="slider-val" id="massOut">5 kg</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Height (m)</span>
+          <input type="range" id="heightSlider" min="1" max="30" step="1" value="15" oninput="updateExploreSim()">
+          <span class="slider-val" id="heightOut">15 m</span>
+        </div>
+        <div class="divider"></div>
+        <div class="card-title">Key formulas</div>
+        <div class="formula-box">GPE = m × g × h</div>
+        <div class="formula-box">KE = ½ × m × v²</div>
+        <div class="formula-box">ME = GPE + KE = constant</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">g = 9.8 m/s² (Alberta standard)</div>
+      </div>
+    </div>
+
+    <div class="grid3">
+      <div class="metric-card blue">
+        <div class="metric-label">Gravitational Potential Energy</div>
+        <div class="metric-value" id="gpeVal">735</div>
+        <div class="metric-unit">Joules (J)</div>
+      </div>
+      <div class="metric-card green">
+        <div class="metric-label">Kinetic Energy</div>
+        <div class="metric-value" id="keVal">0</div>
+        <div class="metric-unit">Joules (J)</div>
+      </div>
+      <div class="metric-card amber">
+        <div class="metric-label">Total Mechanical Energy</div>
+        <div class="metric-value" id="meVal">735</div>
+        <div class="metric-unit">Joules (J)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Real-time energy distribution</div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>GPE (blue)</span><span id="gpePct">100%</span></div>
+        <div class="bar-track"><div class="bar-fill bar-gpe" id="gpeBar" style="width:100%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>KE (green)</span><span id="kePct">0%</span></div>
+        <div class="bar-track"><div class="bar-fill bar-ke" id="keBar" style="width:0%"></div></div>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">
+        ℹ️ As height decreases, GPE converts to KE. Their sum — Total ME — stays constant (Law of Conservation of Energy).
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Part 1 reflection questions (record answers in your notebook)</div>
+      <ol style="font-size:13px;color:var(--text-secondary);line-height:2;padding-left:1.25rem;">
+        <li>What happens to GPE as the object falls? What happens to KE?</li>
+        <li>Does the total mechanical energy change during the fall? Why or why not?</li>
+        <li>Does changing the mass affect the <em>ratio</em> of GPE to KE at any given height? Explain.</li>
+        <li>Calculate the GPE of a 3 kg ball held at 8 m. Show your work.</li>
+      </ol>
+    </div>
+    <button class="btn btn-blue" onclick="markPartDone(1); switchTab('ramp')">Part 1 complete — go to Part 2 →</button>
+  </div>
+
+  <!-- PART 2 -->
+  <div id="panel-ramp" class="panel">
+    <div class="info-note">📋 Part 2 of 4 — Observe how a ball rolls down a ramp. Try adding friction and note how energy is affected.</div>
+    <div class="card">
+      <div class="card-title">Ramp simulation</div>
+      <canvas id="rampCanvas" class="sim-canvas" height="260"></canvas>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <button class="btn btn-green" onclick="startRamp()">▶ Release</button>
+        <button class="btn" onclick="resetRamp()">↺ Reset</button>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Ramp parameters</div>
+        <div class="slider-row">
+          <span class="slider-label">Mass (kg)</span>
+          <input type="range" id="rMassSlider" min="1" max="20" step="1" value="8" oninput="updateRamp()">
+          <span class="slider-val" id="rMassOut">8 kg</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Height (m)</span>
+          <input type="range" id="rHeightSlider" min="1" max="20" step="1" value="10" oninput="updateRamp()">
+          <span class="slider-val" id="rHeightOut">10 m</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Friction</span>
+          <input type="range" id="frictionSlider" min="0" max="50" step="5" value="0" oninput="updateRamp()">
+          <span class="slider-val" id="frictionOut">0%</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Energy analysis at bottom of ramp</div>
+        <div class="bar-wrap">
+          <div class="bar-label"><span>GPE at top</span><span id="rGpeTop">784 J</span></div>
+          <div class="bar-track"><div class="bar-fill bar-gpe" id="rGpeBar" style="width:100%"></div></div>
+        </div>
+        <div class="bar-wrap">
+          <div class="bar-label"><span>KE at bottom</span><span id="rKeBtm">784 J</span></div>
+          <div class="bar-track"><div class="bar-fill bar-ke" id="rKeBar" style="width:100%"></div></div>
+        </div>
+        <div class="bar-wrap">
+          <div class="bar-label"><span>Lost to friction</span><span id="rFricLoss">0 J</span></div>
+          <div class="bar-track"><div class="bar-fill bar-friction" id="rFricBar" style="width:0%"></div></div>
+        </div>
+        <div class="formula-box" style="margin-top:10px;">v = √(2 × KE / m)</div>
+        <div class="metric-card green" style="margin-top:8px;">
+          <div class="metric-label">Speed at bottom of ramp</div>
+          <div class="metric-value" id="rSpeed">14.0</div>
+          <div class="metric-unit">m/s</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Part 2 reflection questions</div>
+      <ol style="font-size:13px;color:var(--text-secondary);line-height:2;padding-left:1.25rem;">
+        <li>Set friction to 0%. What is the relationship between GPE at the top and KE at the bottom?</li>
+        <li>Increase friction to 30%. Where does the "lost" energy go in a real-world ramp?</li>
+        <li>Does changing the mass affect the final speed (with no friction)? Try it and explain what you observe.</li>
+        <li>An 8 kg ball starts at 10 m with 20% friction. Calculate the expected KE and speed at the bottom.</li>
+      </ol>
+    </div>
+    <button class="btn btn-blue" onclick="markPartDone(2); switchTab('data')">Part 2 complete — go to Part 3 →</button>
+  </div>
+
+  <!-- PART 3 -->
+  <div id="panel-data" class="panel">
+    <div class="info-note">📋 Part 3 of 4 — Analyze the data table. Notice what stays constant at every height.</div>
+    <div class="card">
+      <div class="card-title">Energy at multiple heights during free fall</div>
+      <div class="grid2" style="margin-bottom:1rem;">
+        <div class="slider-row">
+          <span class="slider-label">Mass (kg)</span>
+          <input type="range" id="dtMassSlider" min="1" max="20" step="1" value="5" oninput="updateDataTable()">
+          <span class="slider-val" id="dtMassOut">5 kg</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Drop height</span>
+          <input type="range" id="dtHeightSlider" min="5" max="30" step="5" value="15" oninput="updateDataTable()">
+          <span class="slider-val" id="dtHeightOut">15 m</span>
+        </div>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--blue-dark);margin-bottom:10px;">
+        ME (constant) = <span id="dtMe">735</span> J &nbsp;|&nbsp; Mass = <span id="dtMass">5</span> kg &nbsp;|&nbsp; g = 9.8 m/s²
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="dataTable">
+          <thead>
+            <tr>
+              <th>Height (m)</th>
+              <th>GPE (J)</th>
+              <th>KE (J)</th>
+              <th style="color:var(--blue);">Total ME (J) ★</th>
+              <th>Speed (m/s)</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody"></tbody>
+        </table>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:10px;">
+        ★ The Total ME column is identical at every height — this is direct evidence of the Law of Conservation of Energy.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Part 3 reflection questions</div>
+      <ol style="font-size:13px;color:var(--text-secondary);line-height:2;padding-left:1.25rem;">
+        <li>Which column remains constant throughout the entire fall? What law does this demonstrate?</li>
+        <li>At exactly half the drop height, what fraction of ME is GPE? What fraction is KE?</li>
+        <li>Using the table, find the speed at 25% of the drop height. Verify using KE = ½mv².</li>
+        <li>A 10 kg object is dropped from 20 m. Complete a similar table for heights of 20, 15, 10, 5, and 0 m.</li>
+      </ol>
+    </div>
+    <button class="btn btn-blue" onclick="markPartDone(3); switchTab('quiz')">Part 3 complete — go to Part 4 →</button>
+  </div>
+
+  <!-- PART 4 -->
+  <div id="panel-quiz" class="panel">
+    <div class="info-note">📋 Part 4 of 4 — Answer all 7 questions. Your score will be recorded in your completion summary.</div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+        <div class="card-title" style="margin:0;">Knowledge check — 7 questions</div>
+        <span class="score-badge" id="quizScoreDisp">Score: 0 / 0</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-label"><span id="progressLabel">Question 1 of 7</span><span id="progressPct">0%</span></div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      </div>
+      <div class="step-dots" id="stepDots"></div>
+      <div id="quizArea"></div>
+      <div id="quizFeedback"></div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+        <button class="btn btn-blue" id="nextBtn" onclick="nextQuestion()" style="display:none;">Next question →</button>
+        <button class="btn" onclick="restartQuiz()">↺ Restart quiz</button>
+      </div>
+    </div>
+
+    <div class="completion-card" id="completionSection" style="display:none;">
+      <div class="completion-title">✅ Lab Complete!</div>
+      <div class="completion-sub">Copy the summary below and paste it into the Google Form your teacher has shared.</div>
+      <div class="summary-box" id="summaryBox"></div>
+      <button class="copy-btn" onclick="copySummary()">📋 Copy summary to clipboard</button>
+      <span class="copy-feedback" id="copyFeedback">✓ Copied!</span>
+      <div style="font-size:12px;color:var(--text-secondary);margin-top:12px;">
+        💡 Tip: If you haven't entered your name and block at the top of the page, do that first — it will appear in your summary.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const G = 9.8;
+let simRunning=false, simAF=null, simT=0, simH0=15, simM=5;
+let rampRunning=false, rampAF=null, rampT=0;
+let partsDone=[false,false,false,false];
+let quizScore=0, quizIdx=0, quizAnswered=false;
+
+const questions=[
+  {q:'A 4 kg ball is held at a height of 5 m. What is its gravitational potential energy? (g = 9.8 m/s²)',
+   opts:['49 J','196 J','98 J','20 J'],ans:1,
+   exp:'GPE = m × g × h = 4 × 9.8 × 5 = 196 J. Multiply mass × gravity × height.'},
+  {q:'A 10 kg object moves at 6 m/s. What is its kinetic energy?',
+   opts:['60 J','360 J','180 J','30 J'],ans:2,
+   exp:'KE = ½ × m × v² = ½ × 10 × 6² = ½ × 10 × 36 = 180 J. Always square the velocity first!'},
+  {q:'A ball has 500 J of GPE at the top of a ramp. It reaches the bottom with no friction. What is its KE at the bottom?',
+   opts:['250 J','1000 J','0 J','500 J'],ans:3,
+   exp:'Conservation of Energy: at the bottom GPE = 0, so all 500 J of ME must be KE. KE = 500 J.'},
+  {q:'As a roller coaster car descends from a peak, what happens to its energy?',
+   opts:['GPE increases, KE decreases','Both GPE and KE increase','GPE decreases, KE increases','Total mechanical energy increases'],ans:2,
+   exp:'As height decreases, GPE decreases. That energy converts into KE — the car speeds up. Total ME stays the same.'},
+  {q:'A 2 kg object is dropped from 20 m. What is its speed just before hitting the ground? (g = 9.8 m/s²)',
+   opts:['9.8 m/s','19.8 m/s','14.0 m/s','392 m/s'],ans:1,
+   exp:'GPE = mgh = 2×9.8×20 = 392 J. At bottom: KE = 392 J = ½mv² → v² = 2×392/2 = 392 → v = √392 ≈ 19.8 m/s.'},
+  {q:'Which unit is used to measure both kinetic energy and potential energy?',
+   opts:['Watts (W)','Newtons (N)','Joules (J)','Kilograms (kg)'],ans:2,
+   exp:'Energy is always measured in Joules (J). Watts = power, Newtons = force, kilograms = mass.'},
+  {q:'A 5 kg skateboard rolls on a flat surface at 4 m/s (no friction). What is its total mechanical energy?',
+   opts:['20 J','40 J','80 J','100 J'],ans:1,
+   exp:'On flat ground GPE = 0. KE = ½ × 5 × 4² = ½ × 5 × 16 = 40 J. Total ME = 0 + 40 = 40 J.'}
+];
+
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  const idx={'explore':0,'ramp':1,'data':2,'quiz':3}[name];
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+  if(name==='explore') drawSimFrame(0,simH0,simH0,simM);
+  if(name==='ramp'){resetRamp();}
+  if(name==='data') updateDataTable();
+  if(name==='quiz') initQuiz();
+}
+
+function markPartDone(n){
+  partsDone[n-1]=true;
+  updateCompletion();
+}
+
+function updateExploreSim(){
+  simM=+document.getElementById('massSlider').value;
+  simH0=+document.getElementById('heightSlider').value;
+  document.getElementById('massOut').textContent=simM+' kg';
+  document.getElementById('heightOut').textContent=simH0+' m';
+  resetSim();
+}
+
+function resetSim(){
+  if(simAF) cancelAnimationFrame(simAF);
+  simRunning=false; simT=0;
+  simM=+document.getElementById('massSlider').value;
+  simH0=+document.getElementById('heightSlider').value;
+  updateEnergyDisplay(simH0,simH0,simM);
+  drawSim(0,simH0,simH0,simM);
+}
+
+function startSim(){
+  if(simRunning) return;
+  simRunning=true; simT=0;
+  simM=+document.getElementById('massSlider').value;
+  simH0=+document.getElementById('heightSlider').value;
+  let last=null;
+  function frame(ts){
+    if(!last) last=ts;
+    simT+=(ts-last)/1000*1.4; last=ts;
+    let h=simH0-0.5*G*simT*simT;
+    if(h<=0){h=0;simRunning=false;}
+    updateEnergyDisplay(h,simH0,simM);
+    drawSim(simT,h,simH0,simM);
+    if(simRunning) simAF=requestAnimationFrame(frame);
+  }
+  simAF=requestAnimationFrame(frame);
+}
+
+function updateEnergyDisplay(h,h0,m){
+  const gpe=m*G*h, me=m*G*h0, ke=me-gpe;
+  document.getElementById('gpeVal').textContent=Math.round(gpe);
+  document.getElementById('keVal').textContent=Math.round(ke);
+  document.getElementById('meVal').textContent=Math.round(me);
+  const gp=me>0?Math.round(gpe/me*100):0;
+  document.getElementById('gpeBar').style.width=gp+'%';
+  document.getElementById('keBar').style.width=(100-gp)+'%';
+  document.getElementById('gpePct').textContent=gp+'%';
+  document.getElementById('kePct').textContent=(100-gp)+'%';
+}
+
+function drawSim(t,h,h0,m){
+  const cv=document.getElementById('simCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.offsetWidth||400, H=240;
+  cv.width=W; cv.height=H;
+  ctx.clearRect(0,0,W,H);
+  const pad=45, groundY=H-28, usableH=groundY-pad, bx=70, bR=14;
+  ctx.fillStyle='#E1E0D8'; ctx.fillRect(0,groundY,W,H-groundY);
+  ctx.strokeStyle='#D3D1C7'; ctx.lineWidth=0.5; ctx.setLineDash([4,4]);
+  for(let i=0;i<=5;i++){
+    const y=pad+(usableH/5)*i;
+    ctx.beginPath(); ctx.moveTo(42,y); ctx.lineTo(W-10,y); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.fillStyle='#888780'; ctx.font='11px sans-serif'; ctx.textAlign='right';
+  for(let i=0;i<=5;i++){
+    const hl=Math.round(h0*(1-i/5));
+    ctx.fillText(hl+'m',38,pad+(usableH/5)*i+4);
+  }
+  const frac=h0>0?h/h0:0;
+  const ballY=groundY-bR-frac*(usableH-bR*2);
+  const gpe=m*G*h, me=m*G*h0, ke=me-gpe;
+  const keFrac=me>0?ke/me:0;
+  const bc=keFrac>0.5?'#0F6E56':'#185FA5';
+  ctx.beginPath(); ctx.arc(bx,ballY,bR,0,Math.PI*2);
+  ctx.fillStyle=bc; ctx.fill();
+  ctx.strokeStyle='white'; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle='#185FA5'; ctx.textAlign='left'; ctx.font='bold 11px sans-serif';
+  ctx.fillText('GPE: '+Math.round(gpe)+' J',bx+20,ballY-4);
+  ctx.fillStyle='#0F6E56';
+  ctx.fillText('KE:  '+Math.round(ke)+' J',bx+20,ballY+12);
+}
+
+function updateRamp(){
+  const m=+document.getElementById('rMassSlider').value;
+  const h=+document.getElementById('rHeightSlider').value;
+  const fric=+document.getElementById('frictionSlider').value/100;
+  document.getElementById('rMassOut').textContent=m+' kg';
+  document.getElementById('rHeightOut').textContent=h+' m';
+  document.getElementById('frictionOut').textContent=(fric*100).toFixed(0)+'%';
+  const gpeTop=m*G*h, fricLoss=gpeTop*fric, keBot=gpeTop-fricLoss;
+  const speed=Math.sqrt(2*keBot/m);
+  document.getElementById('rGpeTop').textContent=Math.round(gpeTop)+' J';
+  document.getElementById('rKeBtm').textContent=Math.round(keBot)+' J';
+  document.getElementById('rFricLoss').textContent=Math.round(fricLoss)+' J';
+  document.getElementById('rSpeed').textContent=speed.toFixed(1);
+  document.getElementById('rGpeBar').style.width='100%';
+  document.getElementById('rKeBar').style.width=(keBot/gpeTop*100).toFixed(1)+'%';
+  document.getElementById('rFricBar').style.width=(fricLoss/gpeTop*100).toFixed(1)+'%';
+  drawRamp(0,h,h,m,fric);
+}
+
+function resetRamp(){
+  if(rampAF) cancelAnimationFrame(rampAF);
+  rampRunning=false; rampT=0; updateRamp();
+}
+
+function startRamp(){
+  if(rampRunning) return;
+  rampRunning=true; rampT=0;
+  const m=+document.getElementById('rMassSlider').value;
+  const h=+document.getElementById('rHeightSlider').value;
+  const fric=+document.getElementById('frictionSlider').value/100;
+  const gpeTop=m*G*h, fricLoss=gpeTop*fric, keBot=gpeTop-fricLoss;
+  const speed=Math.sqrt(2*keBot/m);
+  const dist=Math.sqrt(h*h+(h*2.2)*(h*2.2));
+  const tTotal=speed>0?dist/(speed/1.4):1.5;
+  let last=null;
+  function frame(ts){
+    if(!last) last=ts;
+    rampT+=(ts-last)/1000*1.15; last=ts;
+    const prog=Math.min(rampT/tTotal,1);
+    drawRamp(prog,h*(1-prog),h,m,fric);
+    if(prog<1&&rampRunning) rampAF=requestAnimationFrame(frame);
+    else rampRunning=false;
+  }
+  rampAF=requestAnimationFrame(frame);
+}
+
+function drawRamp(prog,h,h0,m,fric){
+  const cv=document.getElementById('rampCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.offsetWidth||520, H=260;
+  cv.width=W; cv.height=H;
+  ctx.clearRect(0,0,W,H);
+  const gY=H-30, rTX=55, rTY=45, rBX=W-55, bR=13;
+  ctx.fillStyle='#E1E0D8'; ctx.fillRect(0,gY,W,H-gY);
+  ctx.beginPath();
+  ctx.moveTo(rTX,rTY); ctx.lineTo(rBX,gY); ctx.lineTo(rTX,gY); ctx.closePath();
+  ctx.fillStyle='#EEEDFE'; ctx.fill();
+  ctx.strokeStyle='#534AB7'; ctx.lineWidth=2.5; ctx.stroke();
+  const bx=rTX+prog*(rBX-rTX-bR*1.5);
+  const by=rTY+prog*(gY-rTY)-bR;
+  const gpeTop=m*G*h0, fricLoss=gpeTop*fric;
+  const ke=gpeTop-fricLoss-(m*G*h);
+  const bc=prog>0.5?'#0F6E56':'#185FA5';
+  ctx.beginPath(); ctx.arc(bx,by,bR,0,Math.PI*2);
+  ctx.fillStyle=bc; ctx.fill(); ctx.strokeStyle='white'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.font='bold 11px sans-serif'; ctx.textAlign='left';
+  ctx.fillStyle='#185FA5'; ctx.fillText('GPE: '+Math.round(Math.max(m*G*h,0))+' J',rTX,rTY-12);
+  ctx.fillStyle='#0F6E56'; ctx.fillText('KE: '+Math.round(Math.max(ke,0))+' J',rBX-90,gY-12);
+  if(fric>0){ctx.fillStyle='#993C1D'; ctx.fillText('Friction: '+Math.round(fricLoss)+' J',rTX,rTY+16);}
+  ctx.strokeStyle='#D3D1C7'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(rTX-5,rTY); ctx.lineTo(rTX-5,gY); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#888780'; ctx.font='11px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('h='+h0+'m',rTX-22,(rTY+gY)/2);
+}
+
+function updateDataTable(){
+  const m=+document.getElementById('dtMassSlider').value;
+  const h0=+document.getElementById('dtHeightSlider').value;
+  document.getElementById('dtMassOut').textContent=m+' kg';
+  document.getElementById('dtHeightOut').textContent=h0+' m';
+  document.getElementById('dtMass').textContent=m;
+  const me=m*G*h0;
+  document.getElementById('dtMe').textContent=Math.round(me);
+  const tbody=document.getElementById('dataTableBody');
+  tbody.innerHTML='';
+  [1,0.85,0.7,0.5,0.35,0.2,0.1,0].forEach(frac=>{
+    const h=h0*frac, gpe=m*G*h, ke=me-gpe, v=Math.sqrt(2*ke/m);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${h.toFixed(1)}</td><td>${Math.round(gpe)}</td><td>${Math.round(ke)}</td><td class="me-col">${Math.round(me)}</td><td>${v.toFixed(2)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function initQuiz(){
+  quizIdx=0; quizScore=0; quizAnswered=false;
+  document.getElementById('completionSection').style.display='none';
+  renderQuestion();
+}
+
+function renderQuestion(){
+  quizAnswered=false;
+  document.getElementById('nextBtn').style.display='none';
+  document.getElementById('quizFeedback').innerHTML='';
+  const dots=document.getElementById('stepDots');
+  dots.innerHTML='';
+  questions.forEach((q,i)=>{
+    const d=document.createElement('div');
+    d.className='step-dot'+(i<quizIdx?' done':i===quizIdx?' active':'');
+    dots.appendChild(d);
+  });
+  document.getElementById('quizScoreDisp').textContent='Score: '+quizScore+' / '+quizIdx;
+  const pct=Math.round(quizIdx/questions.length*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressLabel').textContent='Question '+(quizIdx+1)+' of '+questions.length;
+  document.getElementById('progressPct').textContent=pct+'%';
+  if(quizIdx>=questions.length){showFinal();return;}
+  const q=questions[quizIdx];
+  let html=`<div class="quiz-q">${q.q}</div>`;
+  q.opts.forEach((opt,i)=>{
+    html+=`<button class="quiz-option" onclick="selectAnswer(${i})">${String.fromCharCode(65+i)}. ${opt}</button>`;
+  });
+  document.getElementById('quizArea').innerHTML=html;
+}
+
+function selectAnswer(chosen){
+  if(quizAnswered) return;
+  quizAnswered=true;
+  const q=questions[quizIdx];
+  const btns=document.querySelectorAll('.quiz-option');
+  btns.forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.ans) b.classList.add('correct');
+    else if(i===chosen&&chosen!==q.ans) b.classList.add('wrong');
+  });
+  const right=chosen===q.ans;
+  if(right) quizScore++;
+  document.getElementById('quizFeedback').innerHTML=
+    `<div class="feedback-box ${right?'feedback-correct':'feedback-wrong'}"><strong>${right?'✓ Correct!':'✗ Not quite.'}</strong> ${q.exp}</div>`;
+  document.getElementById('nextBtn').style.display='inline-flex';
+  document.getElementById('quizScoreDisp').textContent='Score: '+quizScore+' / '+(quizIdx+1);
+}
+
+function nextQuestion(){quizIdx++; renderQuestion();}
+
+function restartQuiz(){
+  quizIdx=0; quizScore=0; quizAnswered=false;
+  document.getElementById('completionSection').style.display='none';
+  renderQuestion();
+}
+
+function showFinal(){
+  const pct=Math.round(quizScore/questions.length*100);
+  document.getElementById('quizArea').innerHTML=
+    `<div style="text-align:center;padding:1.5rem 0;">
+      <div style="font-size:48px;font-weight:800;color:var(--blue);">${pct}%</div>
+      <div style="font-size:15px;color:var(--text-secondary);margin:8px 0;">${quizScore} / ${questions.length} correct</div>
+      <div style="font-size:14px;color:var(--text);margin-top:4px;">${pct>=80?'🎉 Excellent work!':pct>=60?'👍 Good effort — review the missed questions.':'📚 Review the lab sections and try again.'}</div>
+    </div>`;
+  document.getElementById('progressFill').style.width='100%';
+  document.getElementById('progressLabel').textContent='Complete!';
+  document.getElementById('progressPct').textContent='100%';
+  document.getElementById('nextBtn').style.display='none';
+  markPartDone(4);
+  updateCompletion();
+  document.getElementById('completionSection').style.display='block';
+  document.getElementById('completionSection').scrollIntoView({behavior:'smooth'});
+}
+
+function updateCompletion(){
+  const name=document.getElementById('studentName').value.trim()||'(no name entered)';
+  const block=document.getElementById('studentBlock').value.trim()||'—';
+  const date=document.getElementById('studentDate').value||new Date().toISOString().split('T')[0];
+  const pct=Math.round(quizScore/questions.length*100);
+  const partsStatus=['Part 1 — Explore','Part 2 — Ramp Lab','Part 3 — Data Table','Part 4 — Quiz']
+    .map((p,i)=>`  ${p}: ${partsDone[i]?'✓ Complete':'✗ Not marked complete'}`).join('\n');
+  const summary=
+`=== SCIENCE 10 — ENERGY CONSERVATION LAB ===
+Student: ${name}
+Block: ${block}
+Date: ${date}
+
+PARTS COMPLETED:
+${partsStatus}
+
+QUIZ RESULT:
+  Score: ${quizScore} / ${questions.length} (${pct}%)
+
+LAB FORMULAS USED:
+  GPE = m × g × h
+  KE = ½ × m × v²
+  ME = GPE + KE (conservation of energy)
+
+Submitted via: Energy Conservation Lab (Science 10)`;
+  document.getElementById('summaryBox').textContent=summary;
+}
+
+function copySummary(){
+  const text=document.getElementById('summaryBox').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const fb=document.getElementById('copyFeedback');
+    fb.style.display='inline';
+    setTimeout(()=>fb.style.display='none',2500);
+  });
+}
+
+// init
+setTimeout(()=>{
+  updateExploreSim();
+  updateRamp();
+  updateDataTable();
+  initQuiz();
+  document.getElementById('studentDate').value=new Date().toISOString().split('T')[0];
+  updateCompletion();
+},100);
+</script>
+</body>
+</html>
